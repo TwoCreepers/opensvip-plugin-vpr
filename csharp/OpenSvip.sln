@@ -1,3 +1,4 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32414.318
@@ -49,6 +50,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Dspx", "Plugins\Plugin.Dspx\Plugin.Dspx.csproj", "{ACC96407-AC8E-49E4-98E4-FEF4C78AB7D2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CrSjimo.SvgPlugin", "Plugins\Svg\CrSjimo.SvgPlugin.csproj", "{B42E3F46-F4EC-4B5B-911D-7683AF821F17}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Vpr", "Plugins\Plugin.Vpr\Plugin.Vpr.csproj", "{83648F83-A053-427A-95C5-E8D451142509}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -152,6 +155,10 @@ Global
 		{B42E3F46-F4EC-4B5B-911D-7683AF821F17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B42E3F46-F4EC-4B5B-911D-7683AF821F17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B42E3F46-F4EC-4B5B-911D-7683AF821F17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83648F83-A053-427A-95C5-E8D451142509}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83648F83-A053-427A-95C5-E8D451142509}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83648F83-A053-427A-95C5-E8D451142509}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83648F83-A053-427A-95C5-E8D451142509}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
