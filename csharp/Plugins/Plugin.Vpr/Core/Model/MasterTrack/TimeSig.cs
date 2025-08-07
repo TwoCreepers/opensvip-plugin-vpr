@@ -25,9 +25,6 @@ namespace Plugin.Vpr.Core.Model.MasterTrack
         public bool IsFolded { get; set; } = false;
 
         [JsonProperty("events")]
-        public List<TimeSigEvent> Events { get; set; } = new List<TimeSigEvent>
-        {
-            new TimeSigEvent()
-        };
+        public List<TimeSigEvent> Events { get; set; }
     }
 }

@@ -47,6 +47,11 @@ namespace Plugin.Vpr.Core.Model.Track.Part
 
         [JsonProperty("isSoloMode")]
         public bool IsSoloMode { get; set; } = false;
+
+        public TrackBase(TrackType trackType)
+        {
+            Type = trackType;
+        }
     }
 
 }

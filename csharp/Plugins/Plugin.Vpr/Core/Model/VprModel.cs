@@ -39,8 +39,9 @@ namespace Plugin.Vpr.Core.Model
         /// 不会读取音频文件
         /// </summary>
         /// <param name="path">Vpr 序列文件路径</param>
+        /// <param name="options">转换选项</param>
         /// <returns>Vpr 序列模型</returns>
-        public static VprModel Read(string path)
+        public static VprModel Read(string path, ConverterOptions options)
         {
             var model = new VprModel();
             using (FileStream zipToOpen = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
@@ -61,7 +62,8 @@ namespace Plugin.Vpr.Core.Model
         /// 写入 Vpr 序列文件
         /// </summary>
         /// <param name="path">Vpr 序列文件路径</param>
-        public void Write(string path)
+        /// <param name="options">转换选项</param>
+        public void Write(string path, ConverterOptions options)
         {
             using (var archive = ZipFile.Open(path, ZipArchiveMode.Create))
             {

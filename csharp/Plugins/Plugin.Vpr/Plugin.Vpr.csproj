@@ -60,7 +60,7 @@
     <Compile Include="Core\Model\MasterTrack\Tempo.cs" />
     <Compile Include="Core\Model\MasterTrack\TimeSig.cs" />
     <Compile Include="Core\Model\VprModel.cs" />
-    <Compile Include="Core\Model\ModelStringEnum.cs" />
+    <Compile Include="Core\Model\ModelEnum.cs" />
     <Compile Include="Core\Model\Sequence.cs" />
     <Compile Include="Core\Model\Track\AudioTrack.cs" />
     <Compile Include="Core\Model\Track\Part\Controller.cs" />

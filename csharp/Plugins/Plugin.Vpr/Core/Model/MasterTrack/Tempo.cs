@@ -50,9 +50,6 @@ namespace Plugin.Vpr.Core.Model.MasterTrack
         public TempoAra Ara { get; set; } = new TempoAra();
 
         [JsonProperty("events")]
-        public List<TempoEvent> Events { get; set; } = new List<TempoEvent>
-            {
-                new TempoEvent()
-            };
+        public List<TempoEvent> Events { get; set; }
     }
 }

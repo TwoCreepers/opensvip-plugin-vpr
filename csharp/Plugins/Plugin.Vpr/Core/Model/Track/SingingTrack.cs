@@ -10,6 +10,10 @@ namespace Plugin.Vpr.Core.Model.Track
 {
     public class SingingTrack : TrackBase
     {
+        public SingingTrack() : base(TrackType.Singing)
+        {
+        }
+
         [JsonProperty("lastScrollPositionNoteNumber")]
         public int LastScrollPositionNoteNumber { get; set; } = 68;
 

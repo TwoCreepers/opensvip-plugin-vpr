@@ -25,7 +25,7 @@ namespace Plugin.Vpr.Core.Model.Track.Part
         public List<MidiEffect> MidiEffects { get; set; } = new List<MidiEffect>();
 
         [JsonProperty("notes")]
-        public List<Note.Note> Notes { get; set; } = new List<Note.Note>();
+        public List<Note.Note> Notes { get; set; }
 
         [JsonProperty("controllers")]
         public List<ControllerInfo> Controllers { get; set; }

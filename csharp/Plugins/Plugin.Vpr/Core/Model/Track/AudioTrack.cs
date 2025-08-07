@@ -11,6 +11,10 @@ namespace Plugin.Vpr.Core.Model.Track
 {
     public class AudioTrack : TrackBase
     {
+        public AudioTrack() : base(TrackType.Audio)
+        {
+        }
+
         [JsonProperty("parts")]
         public List<AudioPart> Parts { get; set; } = new List<AudioPart>();
     }
