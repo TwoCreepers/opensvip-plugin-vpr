@@ -1,4 +1,5 @@
-﻿using OpenSvip.Framework;
+﻿using NAudio.Wave;
+using OpenSvip.Framework;
 using OpenSvip.Library;
 using OpenSvip.Model;
 using Plugin.Vpr.Core.Model;
@@ -72,7 +73,7 @@ namespace Plugin.Vpr
                         var convertedLyricsList = PinyinUtils.GetPinyinSeries(originalLyricsList);
 
                         // 构造块
-                        var part = new SingingPart();
+                        var part = new SingingPart();   // OpenSvip 没有 Part 的概念，直接创建一个包含该音轨所有音符的块
                         var partDuration = 0;
                         part.Notes = singingTrack.NoteList.Zip(convertedLyricsList, (note, lyrics) =>
                         {
@@ -182,19 +183,28 @@ namespace Plugin.Vpr
 
                         var audioFile = new AudioFile(instrumentTrack.AudioFilePath);
                         model.AudioFiles.Add(audioFile);
+
+                        // 获取 Wav 文件长度
+                        double WavLength;
+                        using (var audioFileReader = new AudioFileReader(instrumentTrack.AudioFilePath))
+                        {
+                            WavLength = audioFileReader.TotalTime.TotalSeconds * (60 / project.SongTempoList.First().BPM);
+                        }
+
                         // 设置音轨音频文件路径
                         vprInstrumentTrack.Parts.Add(new AudioPart
                         {
                             Region = new RegionInfo
                             {
-                                Begin = 0,
-                                End = instrumentTrack.Offset
+                                Begin = instrumentTrack.Offset,
+                                End = instrumentTrack.Offset + WavLength
                             },
                             Wav = new WavInfo
                             {
                                 Name = audioFile.Name,
                                 OriginalName = audioFile.OriginalName,
-                            }
+                            },
+                            Position = instrumentTrack.Offset,
                         });
                         return vprInstrumentTrack;
                     default:
