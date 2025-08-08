@@ -45,14 +45,6 @@ namespace Plugin.Vpr
 
             // 加载音素转换器
             var phonemeConverter = PhonemeParse.CreateConverter(PhonemeLang.zh_ch);
-            // 转换歌词
-            var originalLyricsList = project.TrackList
-                .OfType<SingingTrack>()
-                .Select(track => track.NoteList)
-                .SelectMany(notes => notes)
-                .Select(note => note.Lyric)
-                .ToList();
-            var convertedLyricsList = PinyinUtils.GetPinyinSeries(originalLyricsList);
 
             // 获取我也不知道是什么东西的偏移量，但别人都这么写。
             var firstBarLength = 1920 * (project.TimeSignatureList.First().Numerator / project.TimeSignatureList.First().Denominator);
@@ -73,6 +65,11 @@ namespace Plugin.Vpr
                         // 设置音轨音量与声像
                         vprSingingTrack.Volume.Events[0].Value = (int)singingTrack.Volume * 100; // 不用在意数组越界，VolumeInfo 默认有一个Event元素
                         vprSingingTrack.Panpot.Events[0].Value = (int)singingTrack.Pan * 100;
+
+                        // 转换歌词
+                        var originalLyricsList = singingTrack.NoteList
+                            .Select(note => note.Lyric);
+                        var convertedLyricsList = PinyinUtils.GetPinyinSeries(originalLyricsList);
 
                         // 构造块
                         var part = new SingingPart();
@@ -98,7 +95,7 @@ namespace Plugin.Vpr
                         .OrderBy(note => note.Position)
                         .ThenBy(note => note.Duration)
                         .ToList();
-                        part.Duration = partDuration + 480 * 2; // 余量
+                        part.Duration = partDuration + 480 * 4; // 余量
 
                         // 如果音轨有编辑参数，则添加到块中
                         var editedParams = singingTrack.EditedParams;
@@ -131,6 +128,7 @@ namespace Plugin.Vpr
                                         if (part.Notes[i].Position + part.Notes[i].Duration > p.Item1)
                                         {
                                             pitchValue = (p.Item2 - (part.Notes[i].Number * 100)) * 512 / 100;
+                                            // 补偿音高控制器值以更贴合最终音高
                                             pitchValue -= PitchPointsCompensation(part.Notes, i, p.Item1);
                                             noteOffset = i;
                                             break;
@@ -226,8 +224,17 @@ namespace Plugin.Vpr
             const int MaxEnd = 105;
             return (Math.Min(possibleStart, MaxStart) + note.Position, note.Position + note.Duration - Math.Min(possibleEnd, MaxEnd));
         }
+        /// <summary>
+        /// 计算 VOCALOID 对该位置最终音高的补偿。（未能完全还原）
+        /// </summary>
+        /// <param name="notes">音符列表</param>
+        /// <param name="noteIndex">当前音符索引</param>
+        /// <param name="pitchPointsPos">音高控制点位置</param>
+        /// <returns>VOCALOID 对该位置最终音高的补偿</returns>
         public int PitchPointsCompensation(List<Plugin.Vpr.Core.Model.Track.Part.Note.Note> notes, int noteIndex, int pitchPointsPos)
         {
+            // 高情商：我们保留了VOCALOID原始的电音味
+            // 低情商：我们技术不行算不好音符前后补偿，轻点喷[求饶]
             const int NoImpactDistance = 60 * 7; // 420
             var (start, end) = NoteStartAndEndPitchCompensationPoints(notes[noteIndex]);
             if (pitchPointsPos > start && pitchPointsPos < end - 20)
