@@ -51,7 +51,7 @@ namespace Plugin.Vpr
                 .ToList();
             var convertedLyricsList = PinyinUtils.GetPinyinSeries(originalLyricsList);
 
-            // 获取我也不知道是什么东西的偏移量
+            // 获取我也不知道是什么东西的偏移量，但别人都这么写。
             var firstBarLength = 1920 * (project.TimeSignatureList.First().Numerator / project.TimeSignatureList.First().Denominator);
 
             // 设置音轨信息
@@ -91,7 +91,10 @@ namespace Plugin.Vpr
                                 Phoneme = phonemeConverter.Convert(string.IsNullOrEmpty(note.Pronunciation) ? lyrics : note.Pronunciation),
                             };
                             return vprNote;
-                        }).OrderBy(note => note.Position).ToList();
+                        })
+                        .OrderBy(note => note.Position)
+                        .ThenBy(note => note.Duration)
+                        .ToList();
                         part.Duration = partDuration + 480 * 2; // 余量
 
                         // 如果音轨有编辑参数，则添加到块中
@@ -106,9 +109,10 @@ namespace Plugin.Vpr
                             {
                                 Name = ControllerName.pitchBend,
                                 Events = editedParams.Pitch.PointList
-                                .Select(p => (p.Item1 - firstBarLength, p.Item2))
+                                .Select(p => (p.Item1 - firstBarLength, p.Item2))   // 计算实际音高控制器位置
                                 .Where(p => p.Item1 >= part.Position && p.Item1 < part.Duration)
-                                .Select(p => {
+                                .Select(p =>
+                                {
                                     var pitchValue = 0;
                                     for (global::System.Int32 i = noteOffset; i < part.Notes.Count; i++)
                                     {
@@ -119,20 +123,16 @@ namespace Plugin.Vpr
                                             break;
                                         }
                                     }
-                                    if (pitchValue < -8192)
-                                    {
-                                        pitchValue = -8192;
-                                    }
-                                    if (pitchValue > 8191)
-                                    {
-                                        pitchValue = 8191;
-                                    }
+                                    if (pitchValue > 8191) Warnings.AddWarning("音高控制器超出限制(>8191)，已忽略", $"在 {p.Item1} 处，值 {pitchValue}，可能的最近音符歌词 {part.Notes[noteOffset].Lyric}", WarningTypes.Params);
+                                    if (pitchValue < -8192) Warnings.AddWarning("音高控制器超出限制(<-8192)，已忽略", $"在 {p.Item1} 处，值 {pitchValue}，可能的最近音符歌词 {part.Notes[noteOffset].Lyric}", WarningTypes.Params);
                                     return new ControllerEvent
                                     {
                                         Position = p.Item1,
                                         Value = pitchValue
                                     };
-                                }).ToList()
+                                })
+                                .Where(p => p.Value <= 8191 && p.Value >= -8192)
+                                .ToList()
                             };
                             // 添加一个值为16的音高灵敏度控制器，因为前面音高控制器的值是相对于音符音高的，并且假设一个半音高为512，8192 / 512 = 16
                             // 同时这也意味这音高控制器范围只有 ±16 个半音
@@ -150,7 +150,7 @@ namespace Plugin.Vpr
                             });
                             // 添加音高控制器到块中
                             controllerInfos.Add(pitchController);
-                            
+
                             part.Controllers = controllerInfos;
                         }
 
@@ -164,12 +164,33 @@ namespace Plugin.Vpr
                             IsMuted = instrumentTrack.Mute,
                             IsSoloMode = instrumentTrack.Solo,
                         };
-                        // 未完成
+                        // 设置音轨音量与声像
+                        vprInstrumentTrack.Volume.Events[0].Value = (int)instrumentTrack.Volume * 100; // 不用在意数组越界，VolumeInfo 默认有一个Event元素
+                        vprInstrumentTrack.Panpot.Events[0].Value = (int)instrumentTrack.Pan * 100;
+
+                        var audioFile = new AudioFile(instrumentTrack.AudioFilePath);
+                        model.AudioFiles.Add(audioFile);
+                        // 设置音轨音频文件路径
+                        vprInstrumentTrack.Parts.Add(new AudioPart
+                        {
+                            Region = new RegionInfo
+                            {
+                                Begin = 0,
+                                End = instrumentTrack.Offset
+                            },
+                            Wav = new WavInfo
+                            {
+                                Name = audioFile.Name,
+                                OriginalName = audioFile.OriginalName,
+                            }
+                        });
                         return vprInstrumentTrack;
                     default:
+                        Warnings.AddWarning($"无法识别的 OpenSvip 音轨类型: {item.Type}", type: WarningTypes.Others);
                         return new Plugin.Vpr.Core.Model.Track.SingingTrack()
                         {
                             Name = "该音轨可能已损坏或类型信息丢失，无法转换",
+                            IsMuted = true,
                         };
                 }
             }).ToList();

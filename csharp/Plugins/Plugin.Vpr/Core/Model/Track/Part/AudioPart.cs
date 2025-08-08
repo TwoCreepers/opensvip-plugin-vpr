@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Plugin.Vpr.Core.Model.Track.Part.Note
+namespace Plugin.Vpr.Core.Model.Track.Part
 {
     public class WavInfo
     {
