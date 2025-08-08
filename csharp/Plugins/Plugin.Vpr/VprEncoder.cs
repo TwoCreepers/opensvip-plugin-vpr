@@ -5,8 +5,11 @@ using Plugin.Vpr.Core.Model;
 using Plugin.Vpr.Core.Model.MasterTrack;
 using Plugin.Vpr.Core.Model.Track.Part;
 using Plugin.Vpr.Core.phoneme;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Policy;
 
 namespace Plugin.Vpr
 {
@@ -109,16 +112,26 @@ namespace Plugin.Vpr
                             {
                                 Name = ControllerName.pitchBend,
                                 Events = editedParams.Pitch.PointList
+                                .Where(p => p.Item1 >= firstBarLength)  // 明明就没人用啊，为什么要保留这个破玩意
                                 .Select(p => (p.Item1 - firstBarLength, p.Item2))   // 计算实际音高控制器位置
                                 .Where(p => p.Item1 >= part.Position && p.Item1 < part.Duration)
                                 .Select(p =>
                                 {
+                                    if (p.Item2 == -100)
+                                    {
+                                        return new ControllerEvent
+                                        {
+                                            Position = p.Item1,
+                                            Value = 0
+                                        };
+                                    }
                                     var pitchValue = 0;
                                     for (global::System.Int32 i = noteOffset; i < part.Notes.Count; i++)
                                     {
                                         if (part.Notes[i].Position + part.Notes[i].Duration > p.Item1)
                                         {
                                             pitchValue = (p.Item2 - (part.Notes[i].Number * 100)) * 512 / 100;
+                                            pitchValue -= PitchPointsCompensation(part.Notes, i, p.Item1);
                                             noteOffset = i;
                                             break;
                                         }
@@ -196,6 +209,82 @@ namespace Plugin.Vpr
             }).ToList();
 
             return model;
+        }
+
+        /// <summary>
+        /// 计算该音符的前音和尾音音高补偿点。
+        /// </summary>
+        /// <param name="note">音符</param>
+        /// <returns>前音和尾音补偿点位置</returns>
+        public (int, int) NoteStartAndEndPitchCompensationPoints(Plugin.Vpr.Core.Model.Track.Part.Note.Note note)
+        {
+            var possibleStart = note.Duration / 4;
+            if (possibleStart < 1) possibleStart = 1;
+            var possibleEnd = note.Duration - possibleStart;
+            if (possibleEnd < 1) possibleEnd = 1;
+            const int MaxStart = 75;
+            const int MaxEnd = 105;
+            return (Math.Min(possibleStart, MaxStart) + note.Position, note.Position + note.Duration - Math.Min(possibleEnd, MaxEnd));
+        }
+        public int PitchPointsCompensation(List<Plugin.Vpr.Core.Model.Track.Part.Note.Note> notes, int noteIndex, int pitchPointsPos)
+        {
+            const int NoImpactDistance = 60 * 7; // 420
+            var (start, end) = NoteStartAndEndPitchCompensationPoints(notes[noteIndex]);
+            if (pitchPointsPos > start && pitchPointsPos < end - 20)
+            {
+                return 0;
+            }
+            var currentNote = notes[noteIndex]; // 当前音符(总是可用)
+            var previousNote = noteIndex > 0 ? notes[noteIndex - 1] : null; // 前一个音符
+            var latterNote = noteIndex < notes.Count - 1 ? notes[noteIndex + 1] : null; // 后一个音符
+            var isPreviousImpact = previousNote != null && currentNote.Position - (previousNote.Position + previousNote.Duration) < NoImpactDistance;
+            var isLatterImpact = latterNote != null && latterNote.Position - (currentNote.Position + currentNote.Duration) < NoImpactDistance;
+            if (!isLatterImpact && pitchPointsPos > end && currentNote.Duration <= 465)
+            {
+                return 0;
+            }
+            else if (!isLatterImpact && currentNote.Duration > 465 && pitchPointsPos > end - 20)
+            {
+                // 音高控制点位于尾音补偿点之后的偏移
+                var pitchPointsEndCompensationOffset = pitchPointsPos - (end - 20);
+                return -(pitchPointsEndCompensationOffset * 256 / (currentNote.Position + currentNote.Duration - end));
+            }
+            else if (!isLatterImpact && currentNote.Duration > 465 && pitchPointsPos > end - 20)
+            {
+                return 0;
+            }
+            else if (!isPreviousImpact && pitchPointsPos < start)
+            {
+                // 音高控制点位于前音补偿点之前的偏移
+                var pitchPointsStartCompensationOffset = pitchPointsPos - currentNote.Position;
+                return pitchPointsStartCompensationOffset * 256 / (start - currentNote.Position);    // start - currentNote.Position 不可能等于0
+            }
+            else if (isLatterImpact && pitchPointsPos > end)
+            {
+                if (currentNote.Number == latterNote.Number)
+                {
+                    return 0; // 如果音高相同，则不需要补偿
+                }
+                var latterStartCompensationPoints = NoteStartAndEndPitchCompensationPoints(latterNote).Item1;
+                var compensationLength = latterStartCompensationPoints - end;
+                var compensationHeight = (latterNote.Number - currentNote.Number) * 512;
+                var pitchPointsEndCompensationOffset = pitchPointsPos - end;
+                return pitchPointsEndCompensationOffset * compensationHeight / compensationLength;
+            }
+            else if (isPreviousImpact && pitchPointsPos < start)
+            {
+                if (currentNote.Number == previousNote.Number)
+                {
+                    return 0; // 如果音高相同，则不需要补偿
+                }
+                
+                var previousEndCompensationPoints = NoteStartAndEndPitchCompensationPoints(previousNote).Item2;
+                var compensationLength = previousEndCompensationPoints - start;
+                var compensationHeight = (currentNote.Number - previousNote.Number) * 512;
+                var pitchPointsStartCompensationOffset = start - pitchPointsPos;
+                return pitchPointsStartCompensationOffset * compensationHeight / compensationLength;
+            }
+            return 0;
         }
     }
 }
