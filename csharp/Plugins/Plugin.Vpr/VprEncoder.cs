@@ -127,8 +127,9 @@ namespace Plugin.Vpr
                                     {
                                         if (part.Notes[i].Position + part.Notes[i].Duration > p.Item1)
                                         {
+                                            // 因为 OpenSvip 格式的音高控制器是绝对音高，所以需要将其转换为相对音高
                                             pitchValue = (p.Item2 - (part.Notes[i].Number * 100)) * 512 / 100;
-                                            // 补偿音高控制器值以更贴合最终音高
+                                            // 去掉 VOCALOID 对该位置最终音高的补偿，使音高参数更贴合最终音高
                                             pitchValue -= PitchPointsCompensation(part.Notes, i, p.Item1);
                                             noteOffset = i;
                                             break;
@@ -220,7 +221,7 @@ namespace Plugin.Vpr
             if (possibleStart < 1) possibleStart = 1;
             var possibleEnd = note.Duration - possibleStart;
             if (possibleEnd < 1) possibleEnd = 1;
-            const int MaxStart = 75;
+            const int MaxStart = 35;
             const int MaxEnd = 105;
             return (Math.Min(possibleStart, MaxStart) + note.Position, note.Position + note.Duration - Math.Min(possibleEnd, MaxEnd));
         }
@@ -260,11 +261,15 @@ namespace Plugin.Vpr
             {
                 return 0;
             }
-            else if (!isPreviousImpact && pitchPointsPos < start)
+            else if (!isPreviousImpact && pitchPointsPos < (start = Math.Min(currentNote.Duration / 4, 75) + currentNote.Position))
             {
                 // 音高控制点位于前音补偿点之前的偏移
                 var pitchPointsStartCompensationOffset = pitchPointsPos - currentNote.Position;
-                return pitchPointsStartCompensationOffset * 256 / (start - currentNote.Position);    // start - currentNote.Position 不可能等于0
+                if (pitchPointsPos < currentNote.Position)
+                {
+                    return pitchPointsStartCompensationOffset * 64 / 45 - 256;
+                }
+                return pitchPointsStartCompensationOffset * 256 / (start - currentNote.Position) - 256;    // start - currentNote.Position 不可能等于0
             }
             else if (isLatterImpact && pitchPointsPos > end)
             {
@@ -284,7 +289,6 @@ namespace Plugin.Vpr
                 {
                     return 0; // 如果音高相同，则不需要补偿
                 }
-                
                 var previousEndCompensationPoints = NoteStartAndEndPitchCompensationPoints(previousNote).Item2;
                 var compensationLength = previousEndCompensationPoints - start;
                 var compensationHeight = (currentNote.Number - previousNote.Number) * 512;
