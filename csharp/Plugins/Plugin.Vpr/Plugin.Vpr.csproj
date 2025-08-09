@@ -116,6 +116,7 @@
     <Compile Include="Core\ProjectFileConstantDocument.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test.cs" />
+    <Compile Include="Utils\VprPitchUtils.cs" />
     <Compile Include="VprDecoder.cs" />
     <Compile Include="VprConverter.cs" />
     <Compile Include="VprEncoder.cs" />
