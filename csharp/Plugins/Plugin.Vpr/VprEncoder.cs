@@ -7,12 +7,9 @@ using Plugin.Vpr.Core.Model.MasterTrack;
 using Plugin.Vpr.Core.Model.Track.Part;
 using Plugin.Vpr.Core.phoneme;
 using Plugin.Vpr.Utils;
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Policy;
 
 namespace Plugin.Vpr
 {
@@ -65,9 +62,6 @@ namespace Plugin.Vpr
                             IsMuted = singingTrack.Mute,
                             IsSoloMode = singingTrack.Solo,
                         };
-                        // 设置音轨音量与声像
-                        vprSingingTrack.Volume.Events[0].Value = (int)singingTrack.Volume * 100; // 不用在意数组越界，VolumeInfo 默认有一个Event元素
-                        vprSingingTrack.Panpot.Events[0].Value = (int)singingTrack.Pan * 100;
 
                         // 转换歌词
                         var originalLyricsList = singingTrack.NoteList
@@ -180,9 +174,6 @@ namespace Plugin.Vpr
                             IsMuted = instrumentTrack.Mute,
                             IsSoloMode = instrumentTrack.Solo,
                         };
-                        // 设置音轨音量与声像
-                        vprInstrumentTrack.Volume.Events[0].Value = (int)instrumentTrack.Volume * 100; // 不用在意数组越界，VolumeInfo 默认有一个Event元素
-                        vprInstrumentTrack.Panpot.Events[0].Value = (int)instrumentTrack.Pan * 100;
 
                         if (!File.Exists(instrumentTrack.AudioFilePath) && !File.Exists(Path.GetFileName(instrumentTrack.AudioFilePath)))
                         {
