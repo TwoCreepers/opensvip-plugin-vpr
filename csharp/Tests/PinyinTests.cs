@@ -32,7 +32,7 @@ namespace OpenSvip.Tests
             foreach (var pair in hanzi.Zip(pinyin, (s1, s2) => new Tuple<string, string>(s1, s2)))
             {
                 var res = WordsHelper.GetPinyin(pair.Item1, " ").ToLower();
-                Assert.AreEqual(pair.Item2, res);
+                Assert.That(res, Is.EqualTo(pair.Item2));
             }
         }
         
@@ -64,7 +64,7 @@ namespace OpenSvip.Tests
             foreach (var pair in hanzi.Zip(pinyin, (s1, s2) => new Tuple<string, string>(s1, s2)))
             {
                 var res = WordsHelper.GetPinyin(pair.Item1, " ").ToLower();
-                Assert.AreEqual(pair.Item2, res);
+                Assert.That(res, Is.EqualTo(pair.Item2));
             }
         }
         
@@ -88,7 +88,7 @@ namespace OpenSvip.Tests
             foreach (var pair in hanzi.Zip(pinyin, (s1, s2) => new Tuple<string, string>(s1, s2)))
             {
                 var res = WordsHelper.GetPinyin(pair.Item1, " ").ToLower();
-                Assert.AreEqual(pair.Item2, res);
+                Assert.That(res, Is.EqualTo(pair.Item2));
             }
         }
         
@@ -114,7 +114,7 @@ namespace OpenSvip.Tests
             foreach (var pair in hanzi.Zip(pinyin, (s1, s2) => new Tuple<string, string>(s1, s2)))
             {
                 var res = WordsHelper.GetPinyin(pair.Item1, " ").ToLower();
-                Assert.AreEqual(pair.Item2, res);
+                Assert.That(res, Is.EqualTo(pair.Item2));
             }
         }
 
@@ -144,7 +144,7 @@ namespace OpenSvip.Tests
             foreach (var pair in hanzi.Zip(pinyin, (s1, s2) => new Tuple<string, string>(s1, s2)))
             {
                 var res = WordsHelper.GetPinyin(pair.Item1, " ").ToLower();
-                Assert.AreEqual(pair.Item2, res);
+                Assert.That(res, Is.EqualTo(pair.Item2));
             }
         }
     }

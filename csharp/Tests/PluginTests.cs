@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using NUnit.Framework;
 using OpenSvip.Framework;
-using SynthV.Stream;
+using OpenSvip.Stream;
+using Plugin.Vpr;
 
 namespace OpenSvip.Tests
 {
@@ -9,11 +11,14 @@ namespace OpenSvip.Tests
     public class PluginTests
     {
         [Test]
-        public void TestSynthVLoad01()
+        public void TestVprSave01()
         {
-            new SynthVConverter().Load(
-                @"C:\Users\YQ之神\Desktop\御守.json",
-                new ConverterOptions(new Dictionary<string, string>()));
+            if (File.Exists(@"C:\game\worker\yqzhishen\opensvip-data\还是你的笑容最可爱.vpr"))
+            {
+                File.Delete(@"C:\game\worker\yqzhishen\opensvip-data\还是你的笑容最可爱.vpr");
+            }
+            var model = new JsonSvipConverter().Load(@"C:\game\worker\yqzhishen\opensvip-data\还是你的笑容最可爱.json", new ConverterOptions(new Dictionary<string, string>()));
+            new VprConverter().Save(@"C:\game\worker\yqzhishen\opensvip-data\还是你的笑容最可爱.vpr", model, new ConverterOptions(new Dictionary<string, string>()));
         }
     }
 }

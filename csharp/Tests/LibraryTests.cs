@@ -25,15 +25,15 @@ namespace OpenSvip.Tests
                 }
             };
             var segments = curve.SplitIntoSegments();
-            Assert.AreEqual(1, segments.Count);
-            Assert.IsTrue(segments[0].SequenceEqual(new List<Tuple<int, int>>
+            Assert.That(segments.Count, Is.EqualTo(1));
+            Assert.That(segments[0].SequenceEqual(new List<Tuple<int, int>>
             {
                 new Tuple<int, int>(1, 1),
                 new Tuple<int, int>(2, 1),
                 new Tuple<int, int>(3, 0),
                 new Tuple<int, int>(4, 1),
                 new Tuple<int, int>(5, 1)
-            }));
+            }), Is.True);
         }
 
         [Test]
@@ -56,17 +56,17 @@ namespace OpenSvip.Tests
                 }
             };
             var segments = curve.SplitIntoSegments();
-            Assert.AreEqual(2, segments.Count);
-            Assert.IsTrue(segments[0].SequenceEqual(new List<Tuple<int, int>>
+            Assert.That(segments.Count, Is.EqualTo(2));
+            Assert.That(segments[0].SequenceEqual(new List<Tuple<int, int>>
             {
                 new Tuple<int, int>(3, 1),
                 new Tuple<int, int>(4, 1)
-            }));
-            Assert.IsTrue(segments[1].SequenceEqual(new List<Tuple<int, int>>
+            }), Is.True);
+            Assert.That(segments[1].SequenceEqual(new List<Tuple<int, int>>
             {
                 new Tuple<int, int>(7, 1),
                 new Tuple<int, int>(8, 1)
-            }));
+            }), Is.True);
         }
 
         [Test]
@@ -83,14 +83,14 @@ namespace OpenSvip.Tests
                 }
             };
             var segments = curve.SplitIntoSegments();
-            Assert.AreEqual(1, segments.Count);
-            Assert.IsTrue(segments[0].SequenceEqual(new List<Tuple<int, int>>
+            Assert.That(segments.Count, Is.EqualTo(1));
+            Assert.That(segments[0].SequenceEqual(new List<Tuple<int, int>>
             {
                 new Tuple<int, int>(1, 0),
                 new Tuple<int, int>(2, 1),
                 new Tuple<int, int>(3, 1),
                 new Tuple<int, int>(4, 0),
-            }));
+            }), Is.True);
         }
 
         [Test]
@@ -107,12 +107,12 @@ namespace OpenSvip.Tests
                 }
             };
             var segments = curve.SplitIntoSegments();
-            Assert.AreEqual(1, segments.Count);
-            Assert.IsTrue(segments[0].SequenceEqual(new List<Tuple<int, int>>
+            Assert.That(segments.Count, Is.EqualTo(1));
+            Assert.That(segments[0].SequenceEqual(new List<Tuple<int, int>>
             {
                 new Tuple<int, int>(2, 1),
                 new Tuple<int, int>(3, 1)
-            }));
+            }), Is.True);
         }
 
         private readonly string[] _chinese =
@@ -142,7 +142,7 @@ namespace OpenSvip.Tests
                 ""
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
         
         [Test]
@@ -160,7 +160,7 @@ namespace OpenSvip.Tests
                 ""
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese, false);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
         
         [Test]
@@ -178,7 +178,7 @@ namespace OpenSvip.Tests
                 ""
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese, true, false);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
         
         [Test]
@@ -196,7 +196,7 @@ namespace OpenSvip.Tests
                 ""
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese, false, false);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
 
         [Test]
@@ -214,7 +214,7 @@ namespace OpenSvip.Tests
                 ""
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese, true, true, false);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
         
         [Test]
@@ -232,7 +232,7 @@ namespace OpenSvip.Tests
                 "-"
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese, false, true, false);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
         
         [Test]
@@ -250,7 +250,7 @@ namespace OpenSvip.Tests
                 ""
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese, true, false, false);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
         
         [Test]
@@ -268,7 +268,7 @@ namespace OpenSvip.Tests
                 "-"
             };
             var result = PinyinUtils.GetPinyinSeries(_chinese, false, false, false);
-            Assert.AreEqual(pinyin, result);
+            Assert.That(result, Is.EqualTo(pinyin));
         }
     }
 }
