@@ -118,6 +118,8 @@
     <Compile Include="LibraryTests.cs" />
     <Compile Include="PinyinTests.cs" />
     <Compile Include="PluginTests.cs" />
+    <Compile Include="PluginVprTest\PhonemeTest.cs" />
+    <Compile Include="PluginVprTest\SaveTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +148,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

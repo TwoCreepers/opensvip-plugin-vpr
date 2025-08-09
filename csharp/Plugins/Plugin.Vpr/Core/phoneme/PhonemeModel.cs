@@ -16,10 +16,6 @@ namespace Plugin.Vpr.Core.phoneme
     public enum PhonemeLang
     {
         /// <summary>
-        /// 英文(美国)
-        /// </summary>
-        en_us,
-        /// <summary>
         /// 中文(中国)
         /// </summary>
         zh_ch,

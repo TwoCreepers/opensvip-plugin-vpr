@@ -11,8 +11,8 @@ namespace Plugin.Vpr.Core.phoneme
     /// </summary>
     public class PhonemeConverter
     {
-        private IDictionary<string, string> _phonemeDictionaries;
-        private string _defaultValue;
+        private readonly IDictionary<string, string> _phonemeDictionaries;
+        private readonly string _defaultValue;
         
         /// <summary>
         /// 转换器语言
@@ -41,6 +41,29 @@ namespace Plugin.Vpr.Core.phoneme
             if (string.IsNullOrEmpty(key)) return _defaultValue;
             if (_phonemeDictionaries.TryGetValue(key, out var value)) return value;
             else return _defaultValue;
+        }
+        /// <summary>
+        /// 主转换函数Try版，若不在字典中则返回默认音素，同时返回值为是否转换成功
+        /// </summary>
+        /// <param name="key">音标</param>
+        /// <param name="value">音素</param>
+        /// <returns>是否成功</returns>
+        public bool TryConvert(string key, out string value)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                value = _defaultValue;
+                return true;
+            }
+            if (_phonemeDictionaries.TryGetValue(key, out value))
+            {
+                return true;
+            }
+            else
+            {
+                value = _defaultValue;
+                return false;
+            }
         }
     }
 }
