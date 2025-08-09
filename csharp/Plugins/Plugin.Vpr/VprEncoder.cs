@@ -132,8 +132,9 @@ namespace Plugin.Vpr
                                         {
                                             // 因为 OpenSvip 格式的音高控制器是绝对音高，所以需要将其转换为相对音高
                                             pitchValue = (p.Item2 - (part.Notes[i].Number * 100)) * 512 / 100;
-                                            // 去掉 VOCALOID 对该位置最终音高的补偿，使音高参数更贴合最终音高
-                                            pitchValue -= VprPitchUtils.PitchPointsCompensation(part.Notes, i, p.Item1);
+                                            // 若启用则 去掉 VOCALOID 对该位置最终音高的补偿，使音高参数更贴合最终音高
+                                            if (_converterOptions.GetValueAsBoolean("IsEnablesReversePitchCompensation", true))
+                                                pitchValue -= VprPitchUtils.PitchPointsCompensation(part.Notes, i, p.Item1);
                                             noteOffset = i;
                                             break;
                                         }

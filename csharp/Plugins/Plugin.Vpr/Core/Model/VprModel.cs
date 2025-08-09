@@ -65,10 +65,6 @@ namespace Plugin.Vpr.Core.Model
         /// <param name="options">转换选项</param>
         public void Write(string path, ConverterOptions options)
         {
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
             using (var archive = ZipFile.Open(path, ZipArchiveMode.Create))
             {
                 var sequenceFileEntry = archive.CreateEntry(ProjectFileConstantDocument.ProjectFileSequenceJsonPath);

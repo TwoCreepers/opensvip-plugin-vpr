@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -15,7 +16,7 @@ namespace Plugin.Vpr.Core.phoneme
         public const string DefaultBaseDictPath = "phoneme_dicts";
         public static PhonemeConverter CreateConverter(PhonemeLang lang, string BaseDictPath = DefaultBaseDictPath)
         {
-            var DictPath = Path.Combine(BaseDictPath, Enum.GetName(typeof(PhonemeLang), lang) + ".json");
+            var DictPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), BaseDictPath, Enum.GetName(typeof(PhonemeLang), lang) + ".json");
             var PhonemeModel = phoneme.PhonemeModel.LoadFromFile(DictPath);
             var PhonemeConverter = new PhonemeConverter(PhonemeModel);
             return PhonemeConverter;

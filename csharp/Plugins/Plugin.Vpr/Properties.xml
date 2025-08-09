@@ -13,6 +13,15 @@
   <Identifier>vpr</Identifier>
   <LibraryPath>Vpr\Plugin.Vpr.dll</LibraryPath>
   <Converter>Plugin.Vpr.VprConverter</Converter>
-  <InputOptions/>
-  <OutputOptions/>
+  <InputOptions>
+  </InputOptions>
+  <OutputOptions>
+    <Option Name ="IsEnablesReversePitchCompensation" Type="boolean" Default="true">
+      <Notes>是否启用反音高补偿</Notes>
+      <Tips>
+        若启用该选项，插件则会在转换音高时计算 VOCALOID 6 对最终音高的补偿并去除。
+        启用后，最终音高将尽力与原始音高贴合。
+      </Tips>
+    </Option>
+  </OutputOptions>
 </Plugin>
