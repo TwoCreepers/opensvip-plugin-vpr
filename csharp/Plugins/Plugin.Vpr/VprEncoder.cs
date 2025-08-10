@@ -20,7 +20,7 @@ namespace Plugin.Vpr
         {
             _converterOptions = options;
         }
-        public VprModel Encode(Project project)
+        public VprModel Encode(Project project, string path)
         {
             // 构造 VprModel 对象
             var model = new VprModel
@@ -96,60 +96,85 @@ namespace Plugin.Vpr
 
                         // 如果音轨有编辑参数，则添加到块中
                         var editedParams = singingTrack.EditedParams;
-                        if (editedParams.Pitch.TotalPointsCount > 0)
+                        if (editedParams.Pitch.TotalPointsCount > 0 || editedParams.Volume.TotalPointsCount > 0)
                         {
                             var controllerInfos = new List<ControllerInfo>();
 
-                            // 添加音高控制器
-                            var noteOffset = 0;
-                            var pitchController = new ControllerInfo
+                            if (editedParams.Volume.TotalPointsCount > 0)
                             {
-                                Name = ControllerName.pitchBend,
-                                Events = editedParams.Pitch.PointList
-                                .Where(p => p.Item1 >= firstBarLength)  // 明明就没人用啊，为什么要保留这个破玩意
-                                .Select(p => (p.Item1 - firstBarLength, p.Item2))   // 计算实际音高控制器位置
-                                .Where(p => p.Item1 >= part.Position && p.Item1 < part.Duration)
-                                .Select(p =>
+                                // 添加音量控制器
+                                var volumeController = new ControllerInfo
                                 {
-                                    if (p.Item2 == -100)
+                                    Name = ControllerName.dynamics,
+                                    Events = editedParams.Volume.PointList
+                                        .Where(p => p.Item1 >= firstBarLength)  // 明明就没人用啊，为什么要保留这个破玩意
+                                        .Select(p => (p.Item1 - firstBarLength, p.Item2))   // 计算实际音量控制器位置
+                                        .Where(p => p.Item1 >= part.Position && p.Item1 < part.Duration)
+                                        .Where(p => p.Item2 >= -1000 && p.Item2 <= 1000) // OpenSvip 的音量范围是 [-1000, 1000]
+                                        .Select(p => new ControllerEvent
+                                        {
+                                            Position = p.Item1,
+                                            Value = p.Item2 * 127 / 2000 + 1000   
+                                            // 将 OpenSvip 的音量范围 [-1000, 1000] 映射到 VPR 的 [0, 127]
+                                        })
+                                        .ToList()
+                                };
+                                // 添加音量控制器到块中
+                                controllerInfos.Add(volumeController);
+                            }
+
+                            if (editedParams.Pitch.TotalPointsCount > 0)
+                            {
+                                // 添加音高控制器
+                                var noteOffset = 0;
+                                var pitchController = new ControllerInfo
+                                {
+                                    Name = ControllerName.pitchBend,
+                                    Events = editedParams.Pitch.PointList
+                                    .Where(p => p.Item1 >= firstBarLength)  // 明明就没人用啊，为什么要保留这个破玩意
+                                    .Select(p => (p.Item1 - firstBarLength, p.Item2))   // 计算实际音高控制器位置
+                                    .Where(p => p.Item1 >= part.Position && p.Item1 < part.Duration)
+                                    .Select(p =>
                                     {
+                                        if (p.Item2 == -100)
+                                        {
+                                            return new ControllerEvent
+                                            {
+                                                Position = p.Item1,
+                                                Value = 0
+                                            };
+                                        }
+                                        var pitchValue = 0;
+                                        for (global::System.Int32 i = noteOffset; i < part.Notes.Count; i++)
+                                        {
+                                            if (part.Notes[i].Position + part.Notes[i].Duration > p.Item1)
+                                            {
+                                                // 因为 OpenSvip 格式的音高控制器是绝对音高，所以需要将其转换为相对音高
+                                                pitchValue = (p.Item2 - (part.Notes[i].Number * 100)) * 512 / 100;
+                                                // 若启用则 去掉 VOCALOID 对该位置最终音高的补偿，使音高参数更贴合最终音高
+                                                if (_converterOptions.GetValueAsBoolean("IsEnablesReversePitchCompensation", true))
+                                                    pitchValue -= VprPitchUtils.PitchPointsCompensation(part.Notes, i, p.Item1);
+                                                noteOffset = i;
+                                                break;
+                                            }
+                                        }
+                                        if (pitchValue > 8191) Warnings.AddWarning("音高控制器超出限制(>8191)，已忽略", $"在 {p.Item1} 处，值 {pitchValue}，可能的最近音符歌词 {part.Notes[noteOffset].Lyric}", WarningTypes.Params);
+                                        if (pitchValue < -8192) Warnings.AddWarning("音高控制器超出限制(<-8192)，已忽略", $"在 {p.Item1} 处，值 {pitchValue}，可能的最近音符歌词 {part.Notes[noteOffset].Lyric}", WarningTypes.Params);
                                         return new ControllerEvent
                                         {
                                             Position = p.Item1,
-                                            Value = 0
+                                            Value = pitchValue
                                         };
-                                    }
-                                    var pitchValue = 0;
-                                    for (global::System.Int32 i = noteOffset; i < part.Notes.Count; i++)
-                                    {
-                                        if (part.Notes[i].Position + part.Notes[i].Duration > p.Item1)
-                                        {
-                                            // 因为 OpenSvip 格式的音高控制器是绝对音高，所以需要将其转换为相对音高
-                                            pitchValue = (p.Item2 - (part.Notes[i].Number * 100)) * 512 / 100;
-                                            // 若启用则 去掉 VOCALOID 对该位置最终音高的补偿，使音高参数更贴合最终音高
-                                            if (_converterOptions.GetValueAsBoolean("IsEnablesReversePitchCompensation", true))
-                                                pitchValue -= VprPitchUtils.PitchPointsCompensation(part.Notes, i, p.Item1);
-                                            noteOffset = i;
-                                            break;
-                                        }
-                                    }
-                                    if (pitchValue > 8191) Warnings.AddWarning("音高控制器超出限制(>8191)，已忽略", $"在 {p.Item1} 处，值 {pitchValue}，可能的最近音符歌词 {part.Notes[noteOffset].Lyric}", WarningTypes.Params);
-                                    if (pitchValue < -8192) Warnings.AddWarning("音高控制器超出限制(<-8192)，已忽略", $"在 {p.Item1} 处，值 {pitchValue}，可能的最近音符歌词 {part.Notes[noteOffset].Lyric}", WarningTypes.Params);
-                                    return new ControllerEvent
-                                    {
-                                        Position = p.Item1,
-                                        Value = pitchValue
-                                    };
-                                })
-                                .Where(p => p.Value <= 8191 && p.Value >= -8192)
-                                .ToList()
-                            };
-                            // 添加一个值为16的音高灵敏度控制器，因为前面音高控制器的值是相对于音符音高的，并且假设一个半音高为512，8192 / 512 = 16
-                            // 同时这也意味这音高控制器范围只有 ±16 个半音
-                            controllerInfos.Add(new ControllerInfo
-                            {
-                                Name = ControllerName.pitchBendSens,
-                                Events = new List<ControllerEvent>
+                                    })
+                                    .Where(p => p.Value <= 8191 && p.Value >= -8192)
+                                    .ToList()
+                                };
+                                // 添加一个值为16的音高灵敏度控制器，因为前面音高控制器的值是相对于音符音高的，并且假设一个半音高为512，8192 / 512 = 16
+                                // 同时这也意味这音高控制器范围只有 ±16 个半音
+                                controllerInfos.Add(new ControllerInfo
+                                {
+                                    Name = ControllerName.pitchBendSens,
+                                    Events = new List<ControllerEvent>
                                 {
                                     new ControllerEvent
                                     {
@@ -157,9 +182,10 @@ namespace Plugin.Vpr
                                         Value = 16
                                     }
                                 }
-                            });
-                            // 添加音高控制器到块中
-                            controllerInfos.Add(pitchController);
+                                });
+                                // 添加音高控制器到块中
+                                controllerInfos.Add(pitchController);
+                            }
 
                             part.Controllers = controllerInfos;
                         }
@@ -175,18 +201,19 @@ namespace Plugin.Vpr
                             IsSoloMode = instrumentTrack.Solo,
                         };
 
-                        if (!File.Exists(instrumentTrack.AudioFilePath) && !File.Exists(Path.GetFileName(instrumentTrack.AudioFilePath)))
+                        var audioFilePath = instrumentTrack.AudioFilePath;
+                        if (!File.Exists(audioFilePath) && !File.Exists(audioFilePath = Path.Combine(Path.GetDirectoryName(path), Path.GetFileName(instrumentTrack.AudioFilePath))))
                         {
-                            Warnings.AddWarning($"音频文件不存在，已忽略该音轨: {instrumentTrack.AudioFilePath}", type: WarningTypes.Others);
+                            Warnings.AddWarning($"音频文件不存在，已忽略该音轨: {audioFilePath}", type: WarningTypes.Others);
                             return vprInstrumentTrack;
                         }
 
-                        var audioFile = new AudioFile(instrumentTrack.AudioFilePath);
+                        var audioFile = new AudioFile(audioFilePath);
                         model.AudioFiles.Add(audioFile);
 
                         // 获取 Wav 文件长度
                         double WavLength;
-                        using (var audioFileReader = new AudioFileReader(instrumentTrack.AudioFilePath))
+                        using (var audioFileReader = new AudioFileReader(audioFilePath))
                         {
                             WavLength = audioFileReader.TotalTime.TotalSeconds * (60 / project.SongTempoList.First().BPM);
                         }
