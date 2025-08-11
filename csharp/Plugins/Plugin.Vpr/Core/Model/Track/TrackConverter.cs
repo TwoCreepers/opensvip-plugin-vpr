@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Plugin.Vpr.Core.Model.Track.Part;
 using System;
 using System.Collections.Generic;
@@ -20,18 +21,29 @@ namespace Plugin.Vpr.Core.Model.Track
 
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            var jObject = Newtonsoft.Json.Linq.JObject.Load(reader);
-            var type = jObject["type"].ToObject<TrackType>();
+            var jArray = JArray.Load(reader);
+            var tracks = new List<TrackBase>();
 
-            switch (type)
+            foreach (var item in jArray)
             {
-                case TrackType.Singing:
-                    return jObject.ToObject<SingingTrack>(serializer);
-                case TrackType.Audio:
-                    return jObject.ToObject<AudioTrack>(serializer);
-                default:
-                    throw new JsonSerializationException($"Unknown track type: {type}");
+                if (item is JObject jObject)
+                {
+                    var type = jObject["type"].ToObject<TrackType>();
+                    switch (type)
+                    {
+                        case TrackType.Singing:
+                            tracks.Add(jObject.ToObject<SingingTrack>(serializer));
+                            break;
+                        case TrackType.Audio:
+                            tracks.Add(jObject.ToObject<AudioTrack>(serializer));
+                            break;
+                        default:
+                            throw new JsonSerializationException($"Unknown track type: {type}");
+                    }
+                }
             }
+
+            return tracks;
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

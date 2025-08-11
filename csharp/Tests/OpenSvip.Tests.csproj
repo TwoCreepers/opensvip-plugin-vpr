@@ -118,6 +118,7 @@
     <Compile Include="LibraryTests.cs" />
     <Compile Include="PinyinTests.cs" />
     <Compile Include="PluginTests.cs" />
+    <Compile Include="PluginVprTest\LoadTest.cs" />
     <Compile Include="PluginVprTest\PhonemeTest.cs" />
     <Compile Include="PluginVprTest\SaveTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
