@@ -12,6 +12,8 @@ namespace Plugin.Vpr.Core.Model.Track.Part
     /// </summary>
     public class SingingPart : PartBase
     {
+        [JsonProperty("duration")]
+        public int Duration { get; set; }
         [JsonProperty("styleName")]
         public string StyleName { get; set; } = "No Effect";
 

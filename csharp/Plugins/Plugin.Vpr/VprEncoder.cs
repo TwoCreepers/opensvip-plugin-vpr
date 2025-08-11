@@ -43,11 +43,16 @@ namespace Plugin.Vpr
                 Denominator = it.Denominator,
             }).ToList();
 
-            // 加载音素转换器
-            var phonemeConverter = PhonemeParse.CreateConverter(PhonemeLang.zh_ch);
-
             // 获取我也不知道是什么东西的偏移量，但别人都这么写。
             var firstBarLength = 1920 * (project.TimeSignatureList.First().Numerator / project.TimeSignatureList.First().Denominator);
+
+            // 时间同步器
+            var timeSynchronizer = new TimeSynchronizer(
+                project.SongTempoList,
+                firstBarLength);
+
+            // 加载音素转换器
+            var phonemeConverter = PhonemeParse.CreateConverter(PhonemeLang.zh_ch);
 
             // 设置音轨信息
             model.Sequence.Tracks = project.TrackList.Select<Track, TrackBase>(item =>
@@ -199,6 +204,7 @@ namespace Plugin.Vpr
                             Name = instrumentTrack.Title,
                             IsMuted = instrumentTrack.Mute,
                             IsSoloMode = instrumentTrack.Solo,
+                            Color = 1,
                         };
 
                         var audioFilePath = instrumentTrack.AudioFilePath;
@@ -215,12 +221,13 @@ namespace Plugin.Vpr
                         double WavLength;
                         using (var audioFileReader = new AudioFileReader(audioFilePath))
                         {
-                            WavLength = audioFileReader.TotalTime.TotalSeconds * (60 / project.SongTempoList.First().BPM);
+                            WavLength = timeSynchronizer.GetActualTicksFromSecs(audioFileReader.TotalTime.TotalSeconds);
                         }
 
                         // 设置音轨音频文件路径
                         vprInstrumentTrack.Parts.Add(new AudioPart
                         {
+                            Name = Path.GetFileNameWithoutExtension(audioFile.OriginalName),
                             Region = new RegionInfo
                             {
                                 Begin = instrumentTrack.Offset,

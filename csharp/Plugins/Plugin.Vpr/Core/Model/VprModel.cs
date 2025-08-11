@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using NAudio.Wave;
+using Newtonsoft.Json;
 using OpenSvip.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace Plugin.Vpr.Core.Model
 {
@@ -26,7 +28,7 @@ namespace Plugin.Vpr.Core.Model
         }
         public void RandomName()
         {
-            Name = Guid.NewGuid().ToString();
+            Name = Guid.NewGuid().ToString() + ".wav";
         }
     }
     public class VprModel
@@ -77,11 +79,21 @@ namespace Plugin.Vpr.Core.Model
                     try
                     {
                         var audioFileEntry = archive.CreateEntry(Path.Combine(ProjectFileConstantDocument.ProjectFileAudioDirectoryPath, item.Name));
-                        using (FileStream audioFileStream = new FileStream(item.FilePath, FileMode.Open, FileAccess.Read, FileShare.None))
+                        using (var audioStream = new AudioFileReader(item.FilePath))
                         {
-                            using (Stream stream = audioFileEntry.Open())
+                            // 创建目标格式: 16位, 44.1kHz, 立体声
+                            var targetFormat = new WaveFormat(44100, 16, audioStream.WaveFormat.Channels);
+                            using (var conversionStream = new MediaFoundationResampler(audioStream, targetFormat))
                             {
-                                audioFileStream.CopyTo(stream);
+                                using (var memoryStream = new MemoryStream())
+                                {
+                                    WaveFileWriter.WriteWavFileToStream(memoryStream, conversionStream);
+                                    using (var stream = audioFileEntry.Open())
+                                    {
+                                        memoryStream.Seek(0, SeekOrigin.Begin);
+                                        memoryStream.CopyTo(stream);
+                                    }
+                                }
                             }
                         }
                     }

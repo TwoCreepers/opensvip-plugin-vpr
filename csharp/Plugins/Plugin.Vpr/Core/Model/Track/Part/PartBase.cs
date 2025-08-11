@@ -11,8 +11,5 @@ namespace Plugin.Vpr.Core.Model.Track.Part
     {
         [JsonProperty("pos")]
         public int Position { get; set; } = 0;
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 }
