@@ -1,10 +1,12 @@
 ﻿using NAudio.Wave;
 using Newtonsoft.Json;
 using OpenSvip.Framework;
+using Plugin.Vpr.Core.Model.Track;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 
 namespace Plugin.Vpr.Core.Model
@@ -56,6 +58,34 @@ namespace Plugin.Vpr.Core.Model
                         var json = reader.ReadToEnd();
                         model.Sequence = JsonConvert.DeserializeObject<Sequence>(json);
                     }
+                    if (!options.GetValueAsBoolean("IsCopyAudioFileFromVprFileToVprFileDirectory", true))
+                    {
+                        return model;
+                    }
+                    var audioDirectoryEntries = archive.Entries;
+                    var audioFileNames = model.Sequence.Tracks
+                        .OfType<AudioTrack>()
+                        .Select(t => t.Parts)
+                        .SelectMany(p => p)
+                        .ToDictionary(p => p.Wav.Name, p => p.Wav.OriginalName);
+                    foreach (var entry in audioDirectoryEntries)
+                    {
+                        if (entry.FullName.StartsWith(ProjectFileConstantDocument.ProjectFileAudioDirectoryPath) && !string.IsNullOrEmpty(entry.Name))
+                        {
+                            if (!audioFileNames.TryGetValue(entry.Name, out var originalName))
+                            {
+                                continue;
+                            }
+                            using (var entryStream = entry.Open())
+                            {
+                                using (var fileStream = new FileStream(Path.Combine(Path.GetDirectoryName(path), originalName), FileMode.Create, FileAccess.Write, FileShare.None))
+                                {
+                                    entryStream.CopyTo(fileStream);
+                                    model.AudioFiles.Add(new AudioFile(fileStream.Name, originalName) { Name = entry.Name });
+                                }
+                            }
+                        }
+                    }
                 }
             }
             return model;
@@ -73,6 +103,10 @@ namespace Plugin.Vpr.Core.Model
                 using (StreamWriter writer = new StreamWriter(sequenceFileEntry.Open()))
                 {
                     writer.Write(JsonConvert.SerializeObject(Sequence, Formatting.None));
+                }
+                if (!options.GetValueAsBoolean("IsCopyAudioFileToVprFile", true))
+                {
+                    return;
                 }
                 foreach (var item in AudioFiles)
                 {
