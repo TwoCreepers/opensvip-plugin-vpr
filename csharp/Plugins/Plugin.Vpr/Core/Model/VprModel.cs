@@ -62,29 +62,36 @@ namespace Plugin.Vpr.Core.Model
                     {
                         return model;
                     }
-                    var audioDirectoryEntries = archive.Entries;
-                    var audioFileNames = model.Sequence.Tracks
-                        .OfType<AudioTrack>()
-                        .Select(t => t.Parts)
-                        .SelectMany(p => p)
-                        .ToDictionary(p => p.Wav.Name, p => p.Wav.OriginalName);
-                    foreach (var entry in audioDirectoryEntries)
+                    try
                     {
-                        if (entry.FullName.StartsWith(ProjectFileConstantDocument.ProjectFileAudioDirectoryPath) && !string.IsNullOrEmpty(entry.Name))
+                        var audioDirectoryEntries = archive.Entries;
+                        var audioFileNames = model.Sequence.Tracks
+                            .OfType<AudioTrack>()
+                            .Select(t => t.Parts)
+                            .SelectMany(p => p)
+                            .ToDictionary(p => p.Wav.Name, p => p.Wav.OriginalName);
+                        foreach (var entry in audioDirectoryEntries)
                         {
-                            if (!audioFileNames.TryGetValue(entry.Name, out var originalName))
+                            if (entry.FullName.StartsWith(ProjectFileConstantDocument.ProjectFileAudioDirectoryPath) && !string.IsNullOrEmpty(entry.Name))
                             {
-                                continue;
-                            }
-                            using (var entryStream = entry.Open())
-                            {
-                                using (var fileStream = new FileStream(Path.Combine(Path.GetDirectoryName(path), originalName), FileMode.Create, FileAccess.Write, FileShare.None))
+                                if (!audioFileNames.TryGetValue(entry.Name, out var originalName))
                                 {
-                                    entryStream.CopyTo(fileStream);
-                                    model.AudioFiles.Add(new AudioFile(fileStream.Name, originalName) { Name = entry.Name });
+                                    continue;
+                                }
+                                using (var entryStream = entry.Open())
+                                {
+                                    using (var fileStream = new FileStream(Path.Combine(Path.GetDirectoryName(path), originalName), FileMode.Create, FileAccess.Write, FileShare.None))
+                                    {
+                                        entryStream.CopyTo(fileStream);
+                                        model.AudioFiles.Add(new AudioFile(fileStream.Name, originalName) { Name = entry.Name });
+                                    }
                                 }
                             }
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        Warnings.AddWarning($"在读取音频文件时出现异常: {e.Message}", "读取音频文件", WarningTypes.Others);
                     }
                 }
             }
