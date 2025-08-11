@@ -3,6 +3,7 @@ using OpenSvip.Model;
 using Plugin.Vpr.Core.Model;
 using Plugin.Vpr.Core.Model.Track.Part;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -62,27 +63,40 @@ namespace Plugin.Vpr
                                     .ToList()
                             };
 
-                            // 转换音量参数
-                            if (singingTrack.Parts.Count > 0 && singingTrack.Parts
-                                .Any(part => part.Controllers != null && part.Controllers.Count > 0 && part.Controllers
-                                    .Any(it => it.Name == ControllerName.dynamics && it.Events != null)))
+                            // 转换参数
+                            var volumeBuffer = new List<Tuple<int, int>>();
+                            foreach (var item1 in singingTrack.Parts)
+                            {
+                                if (item1 == null || item1.Controllers.Count < 1)
+                                {
+                                    continue;
+                                }
+                                foreach (var item2 in item1.Controllers)
+                                {
+                                    if (item2 == null || item2.Events.Count < 1)
+                                    {
+                                        continue;
+                                    }
+                                    if (item2.Name == ControllerName.dynamics)
+                                    {
+                                        foreach (var item3 in item2.Events)
+                                        {
+                                            volumeBuffer.Add(Tuple.Create(
+                                                item3.Position + item1.Position + firstBarLength, // 计算实际于音轨位置: 块起始位置偏移 + OpenSvip谜之规定的第一小节偏移
+                                                item3.Value * 2000 / 127 - 1000)); // 将 VPR 的音量范围 [0, 127] 映射到 OpenSvip 的 [-1000, 1000]
+                                        }
+                                    }
+                                    // 不支持音高参数转换
+                                }
+                            }
+                            if (volumeBuffer.Count > 0)
                             {
                                 // OpenSvip 标准规定两端点横坐标分别固定为 -192000 和 1073741823（意义呢？意义在哪呢？取其糟粕，去其精华）
                                 singingTrackResult.EditedParams.Volume.PointList.Add(Tuple.Create(-192000, 0));
-                                singingTrack.Parts
-                                    .Select(part =>
-                                        part.Controllers.FirstOrDefault(it => it.Name == ControllerName.dynamics).Events
-                                        .Where(it => it.Value >= 0 && it.Value <= 127) // VPR 的音量范围是 [0, 127]
-                                        .Select(it => Tuple.Create(
-                                            it.Position + part.Position + firstBarLength,   // 计算实际于音轨位置: 块起始位置偏移 + OpenSvip谜之规定的第一小节偏移
-                                            it.Value * 2000 / 127 - 1000))) // 将 VPR 的音量范围 [0, 127] 映射到 OpenSvip 的 [-1000, 1000]
-                                    .SelectMany(it => it)
-                                    .ToList()
-                                    .ForEach(it => singingTrackResult.EditedParams.Volume.PointList.Add(it));
+                                singingTrackResult.EditedParams.Volume.PointList.AddRange(volumeBuffer);
                                 singingTrackResult.EditedParams.Volume.PointList.Add(Tuple.Create(1073741823, 0));
                             }
 
-                            // 不支持音高参数转换
                             return singingTrackResult;
                         case Plugin.Vpr.Core.Model.Track.AudioTrack audioTrack:
                             var instrumentTrack = new InstrumentalTrack

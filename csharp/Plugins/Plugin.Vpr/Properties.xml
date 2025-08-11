@@ -14,8 +14,23 @@
   <LibraryPath>Vpr\Plugin.Vpr.dll</LibraryPath>
   <Converter>Plugin.Vpr.VprConverter</Converter>
   <InputOptions>
+    <Option Name ="IsCopyAudioFileFromVprFileToVprFileDirectory" Type="boolean" Default="true">
+      <Notes>是否将音频文件从 VPR 文件中复制到 VPR 文件所在目录</Notes>
+      <Tips>
+        若启用该选项，插件则会将音频文件从 VPR 文件中复制到 VPR 文件所在目录。
+        否则，插件将仅转换序列。
+      </Tips>
+    </Option>
   </InputOptions>
   <OutputOptions>
+    <Option Name ="IsCopyAudioFileToVprFile" Type="boolean" Default="true">
+      <Notes>是否将音频文件复制到 VPR 文件中（会增加文件大小）</Notes>
+      <Tips>
+        若启用该选项，插件则会将音频文件复制到 VPR 文件中。
+        否则，插件将仅转换序列。
+        注意：启用该选项可能导致分发 VPR 文件同时被视为分发音频文件。
+      </Tips>
+    </Option>
     <Option Name ="IsEnablesReversePitchCompensation" Type="boolean" Default="true">
       <Notes>是否启用反音高补偿</Notes>
       <Tips>
