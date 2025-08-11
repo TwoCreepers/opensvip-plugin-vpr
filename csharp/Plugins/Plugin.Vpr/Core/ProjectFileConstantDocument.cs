@@ -15,7 +15,7 @@ namespace Plugin.Vpr.Core
         /// <summary>
         /// 工程文件序列Json目录
         /// </summary>
-        public static string ProjectFileSequenceJsonPath = Path.Combine(ProjectFileRootDirectoryName, ProjectFileSequenceJsonName);
+        public static string ProjectFileSequenceJsonPath = Path.Combine(ProjectFileRootDirectoryName, ProjectFileSequenceJsonName).Replace('\\', '/');
         /// <summary>
         /// 工程文件音频目录名
         /// </summary>
@@ -23,6 +23,6 @@ namespace Plugin.Vpr.Core
         /// <summary>
         /// 工程文件音频目录名
         /// </summary>
-        public static string ProjectFileAudioDirectoryPath = Path.Combine(ProjectFileRootDirectoryName, ProjectFileAudioDirectoryName);
+        public static string ProjectFileAudioDirectoryPath = Path.Combine(ProjectFileRootDirectoryName, ProjectFileAudioDirectoryName).Replace('\\', '/');
     }
 }
