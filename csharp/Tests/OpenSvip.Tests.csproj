@@ -118,9 +118,9 @@
     <Compile Include="LibraryTests.cs" />
     <Compile Include="PinyinTests.cs" />
     <Compile Include="PluginTests.cs" />
-    <Compile Include="PluginVprTest\LoadTest.cs" />
+    <Compile Include="PluginVprTest\ConverterTest\LoadTest.cs" />
     <Compile Include="PluginVprTest\PhonemeTest.cs" />
-    <Compile Include="PluginVprTest\SaveTest.cs" />
+    <Compile Include="PluginVprTest\ConverterTest\SaveTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -148,8 +148,41 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+    <Content Include="PluginVprTest\ConverterTest\Source\OpenSvip\世末歌者.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\OpenSvip\何者.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\OpenSvip\勾指起誓.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\OpenSvip\编程BUG之歌.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\OpenSvip\还是你的笑容最可爱.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\Vpr\世末歌者.vpr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\Vpr\何者.vpr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\Vpr\勾指起誓.vpr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\Vpr\编程BUG之歌.vpr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="PluginVprTest\ConverterTest\Source\Vpr\还是你的笑容最可爱.vpr">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="PluginVprTest\ConverterTest\Output\OpenSvip\" />
+    <Folder Include="PluginVprTest\ConverterTest\Output\Vpr\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
