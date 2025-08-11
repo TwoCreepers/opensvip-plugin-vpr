@@ -119,7 +119,7 @@ namespace Plugin.Vpr
                                         .Select(p => new ControllerEvent
                                         {
                                             Position = p.Item1,
-                                            Value = p.Item2 * 127 / 2000 + 1000   
+                                            Value = (p.Item2 + 1000) * 127 / 2000    
                                             // 将 OpenSvip 的音量范围 [-1000, 1000] 映射到 VPR 的 [0, 127]
                                         })
                                         .ToList()
