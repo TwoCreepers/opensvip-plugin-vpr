@@ -1,0 +1,136 @@
+name: Build Plugin.Vpr-release And Upload to Release Repo
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          path: main
+
+      - name: Checkout Release Repo
+        uses: actions/checkout@v5
+        with:
+          repository: TwoCreepers/opensvip-plugin-vpr-build-release
+          token: ${{ secrets.OPENSVIP_PLUGIN_VPR_BUILD_RELEASE_TOKEN }}
+          path: release
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+    
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2    
+
+      - name: Cd Main Directory
+        run: cd main
+
+      - name: Restore NuGet packages
+        run: nuget restore csharp/OpenSvip.sln -PackagesDirectory "csharp/packages"
+
+      - name: Build OpenSvip.Tests
+        run: dotnet build csharp/Tests/OpenSvip.Tests.csproj /p:Configuration=Release /p:Platform="AnyCPU" --no-restore
+      
+      - name: Run NUnit Tests
+        run: |
+          $testDLL = "csharp/Tests/bin/Release/OpenSvip.Tests.dll"
+          if (Test-Path $testDLL) {
+            dotnet test $testDll /TestAdapterPath:"$(pwd)" /Logger:trx
+          } else {
+            Write-Error "Test DLL not found: $testDLL"
+            exit 1 
+          }
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: "**/*.trx"
+    
+      - name: Delete Non-mandatory File
+        run: |
+          $files = @()
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/Plugin.Vpr.pdb"
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/Newtonsoft.Json.dll"
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/Newtonsoft.Json.xml"
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Framework.dll"
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Library.dll"
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Model.dll"
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Model.dll.config"
+          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/ToolGood.Words.Pinyin.dll"
+          foreach ($file in $files) {
+            if (Test-Path $file) {
+              Remove-Item $file
+            }
+          }
+
+      - name: Cd Root Directory
+        run: cd ..
+
+      - name: Get Time and Data
+        run: |
+          "TODAY=$(Get-Date -Format 'yyyy-MM-dd')" >> $env:GITHUB_ENV
+          "CURRENT_DATETIME=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ss')" >> $env:GITHUB_ENV
+        
+      - name: Build Zip Package
+        run: |
+          $version = $env:GITHUB_REF.split("/")[-1].TrimStart("v")
+          $zipName = "opensvip_plugin_vpr_$version.zip"
+          Rename-Item -Path "main/csharp/Plugins/Plugin.Vpr/bin/Release/" -NewName "Vpr" -Force
+          Compress-Archive -Path "main/csharp/Plugins/Plugin.Vpr/bin/Release/Vpr" -DestinationPath $zipName -Force
+
+      - name: Upload Zip Package to Release Repo
+        run: |
+          $version = $env:GITHUB_REF.split("/")[-1].TrimStart("v")
+          $zipName = "opensvip_plugin_vpr_$version.zip"
+          "zipName=$zipName" >> $env:GITHUB_ENV
+          $tomlPath = "release/market/plugin-vpr.toml"
+          $toml = @"
+          Version = "$version"
+          RequiredFrameworkVersion = "1.4.2"
+          Prologue = "*该更新由 Github Actions 自动构建于 $CURRENT_DATETIME 并推送"
+          Items = [
+
+          ]
+          Epilogue = ""
+          DownloadLink = "$zipName"
+          "@
+          $release_repo_path = "release/release/"
+          Copy-Item -Path $zipName -Destination $release_repo_path -Force
+          Set-Content -Path $tomlPath -Value $toml
+          cd release
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git remote set-url origin https://${{ secrets.OPENSVIP_PLUGIN_VPR_BUILD_RELEASE_TOKEN }}@github.com/TwoCreepers/opensvip-plugin-vpr-build-release.git
+          git add $zipName
+          git commit -m "自动构建推送: $version $env:CURRENT_DATETIME"
+          gith push origin main
+          cd ..
+
+      - name: Generate Release Info
+        run: |
+          $info = @"
+          **该发行版由 Github Actions 自动构建于 $CURRENT_DATETIME 并发行**  
+          **Full Changelog**: https://github.com/TwoCreepers/opensvip-plugin-vpr/commits/$env:GITHUB_REF
+          "@
+          Set-Content -Path ReleaseInfo.txt -Value $info
+
+      - name: Upload Zip Package to Release Repo Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ env.zipName }}
+          body_path: ReleaseInfo.txt
+          token: ${{ secrets.OPENSVIP_PLUGIN_VPR_BUILD_RELEASE_TOKEN }}
