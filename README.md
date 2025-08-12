@@ -90,3 +90,9 @@ A：
 - 参数警告：因为部分参数可能由于转换算法不准或数据本身错误导致超出范围，大部分时候参数相关的警告是可忽略的。
 - 音频复制警告：由于音频文件找不到或wav格式不正确，导致音频文件未能复制，通常可忽略。
 - 音轨警告：音轨类型未知，无法转换，这可能是由于格式损坏导致，通常情况下这是不可能发生的。
+
+Q：我应该去那里下载已经打包好的插件？  
+A：插件会由 GitHub Actions 自动打包并发布到另一个[仓库](https://github.com/TwoCreepers/opensvip-plugin-vpr-build-release)中，你可以去那里的 [Releases](https://github.com/TwoCreepers/opensvip-plugin-vpr-build-release/releases) 页面下载。
+
+Q：为什么我没有收到更新推送？  
+A：啊……这个……可能是GitHub访问超时或者其他原因……总之，作者已经按照正常方式推送了，不行可以手动更新嘛……
