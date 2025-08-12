@@ -65,6 +65,7 @@ namespace Plugin.Vpr
 
                             // 转换参数
                             var volumeBuffer = new List<Tuple<int, int>>();
+                            var breathBuffer = new List<Tuple<int, int>>();
                             foreach (var item1 in singingTrack.Parts)
                             {
                                 if (item1 == null || item1.Controllers.Count < 1)
@@ -86,6 +87,15 @@ namespace Plugin.Vpr
                                                 item3.Value * 2000 / 127 - 1000)); // 将 VPR 的音量范围 [0, 127] 映射到 OpenSvip 的 [-1000, 1000]
                                         }
                                     }
+                                    if (item2.Name == ControllerName.breathiness)
+                                    {
+                                        foreach (var item3 in item2.Events)
+                                        {
+                                            breathBuffer.Add(Tuple.Create(
+                                                item3.Position + item1.Position + firstBarLength, // 计算实际于音轨位置: 块起始位置偏移 + OpenSvip谜之规定的第一小节偏移
+                                                item3.Value * 2000 / 127 - 1000)); // 将 VPR 的气声范围 [0, 127] 映射到 OpenSvip 的 [-1000, 1000]
+                                        }
+                                    }
                                     // 不支持音高参数转换
                                 }
                             }
@@ -95,6 +105,12 @@ namespace Plugin.Vpr
                                 singingTrackResult.EditedParams.Volume.PointList.Add(Tuple.Create(-192000, 0));
                                 singingTrackResult.EditedParams.Volume.PointList.AddRange(volumeBuffer);
                                 singingTrackResult.EditedParams.Volume.PointList.Add(Tuple.Create(1073741823, 0));
+                            }
+                            if (breathBuffer.Count > 0)
+                            {
+                                singingTrackResult.EditedParams.Breath.PointList.Add(Tuple.Create(-192000, 0));
+                                singingTrackResult.EditedParams.Breath.PointList.AddRange(breathBuffer);
+                                singingTrackResult.EditedParams.Breath.PointList.Add(Tuple.Create(1073741823, 0));
                             }
 
                             return singingTrackResult;

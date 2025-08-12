@@ -128,6 +128,27 @@ namespace Plugin.Vpr
                                 controllerInfos.Add(volumeController);
                             }
 
+                            if (editedParams.Breath.TotalPointsCount > 0)
+                            {
+                                // 添加气息控制器
+                                var breathController = new ControllerInfo
+                                {
+                                    Name = ControllerName.breathiness,
+                                    Events = editedParams.Breath.PointList
+                                        .Where(p => p.Item1 >= firstBarLength)  // 明明就没人用啊，为什么要保留这个破玩意
+                                        .Select(p => (p.Item1 - firstBarLength, p.Item2))   // 计算实际气息控制器位置
+                                        .Where(p => p.Item1 >= part.Position && p.Item1 < part.Duration)
+                                        .Select(p => new ControllerEvent
+                                        {
+                                            Position = p.Item1,
+                                            Value = (p.Item2 + 1000) * 127 / 2000 // 将 OpenSvip 的气息范围 [-1000, 1000] 映射到 VPR 的 [0, 127]
+                                        })
+                                        .ToList()
+                                };
+                                // 添加气息控制器到块中
+                                controllerInfos.Add(breathController);
+                            }
+
                             if (editedParams.Pitch.TotalPointsCount > 0)
                             {
                                 // 添加音高控制器
