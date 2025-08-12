@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Plugin>
   <Name>VOCALOID 6 序列文件转换插件</Name>
-  <Version>0.0.1</Version>
+  <Version>0.2.0</Version>
   <Author>两只爬行者</Author>
   <HomePage>none</HomePage>
-  <UpdateUri>none</UpdateUri>
+  <UpdateUri>https://twocreepers.github.io/opensvip-plugin-vpr-build-release/market/plugin-vpr.toml</UpdateUri>
   <Descriptions>适用于 OpenSvip 的 VOCALOID 6 序列文件转换插件，可能适用于 VOCALOID 5 但其并不在支持范围内。</Descriptions>
   <TargetFramework>1.4.2</TargetFramework>
   <Requirements>无</Requirements>
