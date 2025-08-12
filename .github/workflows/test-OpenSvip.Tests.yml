@@ -1,0 +1,47 @@
+name: test-OpenSvip.Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+    
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore NuGet packages
+        run: dotnet restore csharp/Tests/OpenSvip.Tests.csproj
+
+      - name: Build OpenSvip.Tests
+        run: dotnet build csharp/Tests/OpenSvip.Tests.csproj /p:Configuration=Release /p:Platform="AnyCPU" --no-restore
+      
+      - name: Run NUnit Tests
+        run: |
+          $testDLL = "csharp/Tests/bin/Release/OpenSvip.Tests.dll"
+          if (Test-Path $testDLL) {
+            dotnet test $testDll /TestAdapterPath:"$(pwd)" /Logger:trx
+          } else {
+            Write-Error "Test DLL not found: $testDLL"
+            exit 1 
+          }
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: TestResults
+          path: "**/*.trx"
+          
