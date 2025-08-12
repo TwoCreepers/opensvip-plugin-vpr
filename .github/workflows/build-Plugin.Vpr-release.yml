@@ -94,7 +94,7 @@ jobs:
           $toml = @"
           Version = "$version"
           RequiredFrameworkVersion = "1.4.2"
-          Prologue = "*该更新由 Github Actions 自动构建于 $CURRENT_DATETIME 并推送"
+          Prologue = "*该更新由 Github Actions 自动构建于 $env:CURRENT_DATETIME 并推送"
           Items = [
 
           ]
@@ -120,7 +120,9 @@ jobs:
           git remote set-url origin https://${{ secrets.OPENSVIP_PLUGIN_VPR_BUILD_RELEASE_TOKEN }}@github.com/TwoCreepers/opensvip-plugin-vpr-build-release.git
           git add .
           git commit -m "自动构建推送: $version $env:CURRENT_DATETIME"
+          git tag -a $version -m "自动构建推送: $version $env:CURRENT_DATETIME"
           git push origin main
+          git push origin --tags
           cd ..
 
       - name: Generate Release Info
