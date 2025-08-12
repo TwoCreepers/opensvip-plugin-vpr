@@ -24,7 +24,7 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore NuGet packages
-        run: dotnet restore csharp/Tests/OpenSvip.Tests.csproj
+        run: dotnet restore csharp/Tests/OpenSvip.Tests.csproj --packages ../packages
 
       - name: Build OpenSvip.Tests
         run: dotnet build csharp/Tests/OpenSvip.Tests.csproj /p:Configuration=Release /p:Platform="AnyCPU" --no-restore
