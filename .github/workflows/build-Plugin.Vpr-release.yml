@@ -33,18 +33,15 @@ jobs:
       - name: Setup NuGet
         uses: nuget/setup-nuget@v2    
 
-      - name: Cd Main Directory
-        run: cd main
-
       - name: Restore NuGet packages
-        run: nuget restore csharp/OpenSvip.sln -PackagesDirectory "csharp/packages"
+        run: nuget restore main/csharp/OpenSvip.sln -PackagesDirectory "csharp/packages"
 
       - name: Build OpenSvip.Tests
-        run: dotnet build csharp/Tests/OpenSvip.Tests.csproj /p:Configuration=Release /p:Platform="AnyCPU" --no-restore
+        run: dotnet build main/csharp/Tests/OpenSvip.Tests.csproj /p:Configuration=Release /p:Platform="AnyCPU" --no-restore
       
       - name: Run NUnit Tests
         run: |
-          $testDLL = "csharp/Tests/bin/Release/OpenSvip.Tests.dll"
+          $testDLL = "main/csharp/Tests/bin/Release/OpenSvip.Tests.dll"
           if (Test-Path $testDLL) {
             dotnet test $testDll /TestAdapterPath:"$(pwd)" /Logger:trx
           } else {
@@ -62,22 +59,19 @@ jobs:
       - name: Delete Non-mandatory File
         run: |
           $files = @()
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/Plugin.Vpr.pdb"
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/Newtonsoft.Json.dll"
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/Newtonsoft.Json.xml"
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Framework.dll"
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Library.dll"
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Model.dll"
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Model.dll.config"
-          $files += "csharp/Plugins/Plugin.Vpr/bin/Release/ToolGood.Words.Pinyin.dll"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/Plugin.Vpr.pdb"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/Newtonsoft.Json.dll"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/Newtonsoft.Json.xml"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Framework.dll"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Library.dll"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Model.dll"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/OpenSvip.Model.dll.config"
+          $files += "main/csharp/Plugins/Plugin.Vpr/bin/Release/ToolGood.Words.Pinyin.dll"
           foreach ($file in $files) {
             if (Test-Path $file) {
               Remove-Item $file
             }
           }
-
-      - name: Cd Root Directory
-        run: cd ..
 
       - name: Get Time and Data
         run: |
@@ -111,12 +105,8 @@ jobs:
           Copy-Item -Path $zipName -Destination $release_repo_path -Force
           Set-Content -Path $tomlPath -Value $toml
           cd release
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git remote set-url origin https://${{ secrets.OPENSVIP_PLUGIN_VPR_BUILD_RELEASE_TOKEN }}@github.com/TwoCreepers/opensvip-plugin-vpr-build-release.git
           git add $zipName
           git commit -m "自动构建推送: $version $env:CURRENT_DATETIME"
-          gith push origin main
           cd ..
 
       - name: Generate Release Info
