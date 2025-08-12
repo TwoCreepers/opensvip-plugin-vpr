@@ -102,6 +102,12 @@ jobs:
           DownloadLink = "$zipName"
           "@
           $release_repo_path = "release/release/"
+          if (Test-Path $release_repo_path){
+            mkdir $release_repo_path -Force
+          }
+          if (Test-Path "release/market"){
+            mkdir "release/market" -Force
+          }
           Copy-Item -Path $zipName -Destination $release_repo_path -Force
           Set-Content -Path $tomlPath -Value $toml
           cd release
