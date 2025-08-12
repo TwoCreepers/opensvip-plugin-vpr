@@ -27,7 +27,7 @@ jobs:
         uses: nuget/setup-nuget@v2    
 
       - name: Restore NuGet packages
-        run: nuget restore csharp/Tests/OpenSvip.Tests.csproj -PackagesDirectory "csharp/packages"
+        run: nuget restore csharp/OpenSvip.sln -PackagesDirectory "csharp/packages"
 
       - name: Build OpenSvip.Tests
         run: dotnet build csharp/Tests/OpenSvip.Tests.csproj /p:Configuration=Release /p:Platform="AnyCPU" --no-restore
