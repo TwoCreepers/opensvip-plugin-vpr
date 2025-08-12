@@ -102,11 +102,15 @@ jobs:
           DownloadLink = "$zipName"
           "@
           $release_repo_path = "release/release"
-          if (Test-Path $release_repo_path){
+          if (-not Test-Path $release_repo_path){
             mkdir $release_repo_path -Force
           }
-          if (Test-Path "release/market"){
+          if (-not Test-Path "release/market"){
             mkdir "release/market" -Force
+          }
+          if (-not (Test-Path $zipName)) {
+            Write-Error "错误: $zipName 不存在！"
+            exit 1
           }
           Copy-Item -Path $zipName -Destination $release_repo_path -Force
           Set-Content -Path $tomlPath -Value $toml
