@@ -81,7 +81,7 @@ jobs:
       - name: Build Zip Package
         run: |
           $version = $env:GITHUB_REF.split("/")[-1].TrimStart("v")
-          $zipName = "opensvip_plugin_vpr_$version.zip"
+          $zipName = "./opensvip_plugin_vpr_$version.zip"
           Rename-Item -Path "main/csharp/Plugins/Plugin.Vpr/bin/Release/" -NewName "Vpr" -Force
           Compress-Archive -Path "main/csharp/Plugins/Plugin.Vpr/bin/Vpr" -DestinationPath $zipName -Force
 
@@ -111,7 +111,7 @@ jobs:
           Copy-Item -Path $zipName -Destination $release_repo_path -Force
           Set-Content -Path $tomlPath -Value $toml
           cd release
-          git add $zipName
+          git add .
           git commit -m "自动构建推送: $version $env:CURRENT_DATETIME"
           cd ..
 
