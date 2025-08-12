@@ -83,7 +83,7 @@ jobs:
           $version = $env:GITHUB_REF.split("/")[-1].TrimStart("v")
           $zipName = "opensvip_plugin_vpr_$version.zip"
           Rename-Item -Path "main/csharp/Plugins/Plugin.Vpr/bin/Release/" -NewName "Vpr" -Force
-          Compress-Archive -Path "Vpr" -DestinationPath $zipName -Force
+          Compress-Archive -Path "main/csharp/Plugins/Plugin.Vpr/bin/Vpr" -DestinationPath $zipName -Force
 
       - name: Upload Zip Package to Release Repo
         run: |
