@@ -101,7 +101,7 @@ jobs:
           Epilogue = ""
           DownloadLink = "$zipName"
           "@
-          $release_repo_path = "release/release/"
+          $release_repo_path = "release/release"
           if (Test-Path $release_repo_path){
             mkdir $release_repo_path -Force
           }
