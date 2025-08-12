@@ -94,6 +94,7 @@ jobs:
           $toml = @"
           Version = "$version"
           RequiredFrameworkVersion = "1.4.2"
+          Date = "$env:TODAY"
           Prologue = "*该更新由 Github Actions 自动构建于 $env:CURRENT_DATETIME 并推送"
           Items = [
 
