@@ -102,10 +102,10 @@ jobs:
           DownloadLink = "$zipName"
           "@
           $release_repo_path = "release/release"
-          if (-not Test-Path $release_repo_path){
+          if (-not (Test-Path $release_repo_path)){
             mkdir $release_repo_path -Force
           }
-          if (-not Test-Path "release/market"){
+          if (-not (Test-Path "release/market")){
             mkdir "release/market" -Force
           }
           if (-not (Test-Path $zipName)) {
