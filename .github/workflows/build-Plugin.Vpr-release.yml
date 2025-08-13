@@ -81,6 +81,7 @@ jobs:
         run: |
           $version = $env:GITHUB_REF.split("/")[-1].TrimStart("v")
           $zipName = "./opensvip_plugin_vpr_$version.zip"
+          Copy-Path -Path "main/THIRD-PARTY-LICENSES.md" -Destination "main/csharp/Plugins/Plugin.Vpr/bin/Release/" -Force
           Rename-Item -Path "main/csharp/Plugins/Plugin.Vpr/bin/Release/" -NewName "Vpr" -Force
           Compress-Archive -Path "main/csharp/Plugins/Plugin.Vpr/bin/Vpr" -DestinationPath $zipName -Force
 
