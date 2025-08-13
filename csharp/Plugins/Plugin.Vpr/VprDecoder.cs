@@ -43,7 +43,7 @@ namespace Plugin.Vpr
                         case Plugin.Vpr.Core.Model.Track.SingingTrack singingTrack:
                             // 获取我也不知道是什么东西的偏移量，但别人都这么写。
                             var firstBarLength = 1920 * (model.Sequence.MasterTrack.TimeSignature.Events.First().Numerator / model.Sequence.MasterTrack.TimeSignature.Events.First().Denominator);
-                            
+
                             // 创建音轨
                             var singingTrackResult = new SingingTrack
                             {
@@ -66,6 +66,7 @@ namespace Plugin.Vpr
                             // 转换参数
                             var volumeBuffer = new List<Tuple<int, int>>();
                             var breathBuffer = new List<Tuple<int, int>>();
+                            var pitchBuffer = new List<Tuple<int, int>>();
                             foreach (var item1 in singingTrack.Parts)
                             {
                                 if (item1 == null || item1.Controllers.Count < 1)
@@ -96,7 +97,58 @@ namespace Plugin.Vpr
                                                 item3.Value * 2000 / 127 - 1000)); // 将 VPR 的气声范围 [0, 127] 映射到 OpenSvip 的 [-1000, 1000]
                                         }
                                     }
-                                    // 不支持音高参数转换
+                                    if (item2.Name == ControllerName.pitchBend)
+                                    {
+                                        var noteOffset = 0;
+                                        var notes = item1.Notes.OrderBy(note => note.Position).ThenBy(note => note.Duration).ToList();
+                                        if (item1.Controllers.Any(c => c.Name == ControllerName.pitchBendSens))
+                                        {
+                                            var pitchBendSens = item1.Controllers.First(c => c.Name == ControllerName.pitchBendSens).Events.OrderBy(it => it.Position).ToList();
+                                            var pitchBendSensOffset = 0;
+                                            foreach (var item3 in item2.Events)
+                                            {
+                                                for (global::System.Int32 i = noteOffset; i < notes.Count; i++)
+                                                {
+                                                    if (item3.Position < notes[i].Position + notes[i].Duration)
+                                                    {
+                                                        // 计算实际于音轨位置: 块起始位置偏移 + OpenSvip谜之规定的第一小节偏移
+                                                        var position = item3.Position + item1.Position + firstBarLength;
+                                                        for (global::System.Int32 j = pitchBendSensOffset; j < pitchBendSens.Count; j++)
+                                                        {
+                                                            if (item3.Position < pitchBendSens[j].Position)
+                                                            {
+                                                                var PBS = pitchBendSens[j < 1 ? 0 : j - 1].Value;
+                                                                pitchBuffer.Add(Tuple.Create(
+                                                                    position,
+                                                                    notes[i].Number * 100 + item3.Value * 100 / (int)(8192.0 / PBS)));
+                                                                pitchBendSensOffset = j;
+                                                                break;
+                                                            }
+                                                        }
+                                                        noteOffset = i;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            foreach (var item3 in item2.Events)
+                                            {
+                                                for (global::System.Int32 i = noteOffset; i < notes.Count; i++)
+                                                {
+                                                    if (item3.Position < notes[i].Position + notes[i].Duration)
+                                                    {
+                                                        pitchBuffer.Add(Tuple.Create(
+                                                            item3.Position + item1.Position + firstBarLength, // 计算实际于音轨位置: 块起始位置偏移 + OpenSvip谜之规定的第一小节偏移
+                                                            notes[i].Number * 100 + item3.Value * 100 / 4096));
+                                                        noteOffset = i;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             if (volumeBuffer.Count > 0)
@@ -111,6 +163,12 @@ namespace Plugin.Vpr
                                 singingTrackResult.EditedParams.Breath.PointList.Add(Tuple.Create(-192000, 0));
                                 singingTrackResult.EditedParams.Breath.PointList.AddRange(breathBuffer);
                                 singingTrackResult.EditedParams.Breath.PointList.Add(Tuple.Create(1073741823, 0));
+                            }
+                            if (pitchBuffer.Count > 0)
+                            {
+                                singingTrackResult.EditedParams.Pitch.PointList.Add(Tuple.Create(-192000, -100));   // 音高中断值为 -100
+                                singingTrackResult.EditedParams.Pitch.PointList.AddRange(pitchBuffer);
+                                singingTrackResult.EditedParams.Pitch.PointList.Add(Tuple.Create(1073741823, -100));
                             }
 
                             return singingTrackResult;
