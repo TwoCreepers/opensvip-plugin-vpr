@@ -155,13 +155,13 @@ namespace Plugin.Vpr
                             {
                                 // OpenSvip 标准规定两端点横坐标分别固定为 -192000 和 1073741823（意义呢？意义在哪呢？取其糟粕，去其精华）
                                 singingTrackResult.EditedParams.Volume.PointList.Add(Tuple.Create(-192000, 0));
-                                singingTrackResult.EditedParams.Volume.PointList.AddRange(volumeBuffer);
+                                singingTrackResult.EditedParams.Volume.PointList.AddRange(volumeBuffer.Where(it => -1000 <= it.Item2 && it.Item2 <= 1000));
                                 singingTrackResult.EditedParams.Volume.PointList.Add(Tuple.Create(1073741823, 0));
                             }
                             if (breathBuffer.Count > 0)
                             {
                                 singingTrackResult.EditedParams.Breath.PointList.Add(Tuple.Create(-192000, 0));
-                                singingTrackResult.EditedParams.Breath.PointList.AddRange(breathBuffer);
+                                singingTrackResult.EditedParams.Breath.PointList.AddRange(breathBuffer.Where(it => -1000 <= it.Item2 && it.Item2 <= 1000));
                                 singingTrackResult.EditedParams.Breath.PointList.Add(Tuple.Create(1073741823, 0));
                             }
                             if (pitchBuffer.Count > 0)
