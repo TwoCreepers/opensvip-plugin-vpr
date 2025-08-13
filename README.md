@@ -96,3 +96,20 @@ A：插件会由 GitHub Actions 自动打包并发布到另一个[仓库](https:
 
 Q：为什么我没有收到更新推送？  
 A：啊……这个……作者也没收到推送，所以去看了更新相关的代码——只要有**一个插件**检查更新时发生**任何异常**插件更新检查流程都会**全部终止**，是的，你没有看错，是**全部终止**。~~这东西是怎么走出测试的~~。不过呢……GitHub确实是日常抽风上不去，我估计就是改了能收到推送概率也不大，所以……老老实实的手动更新吧……
+
+### 许可证
+
+适用于 [OpenSvip](https://github.com/yqzhishen/opensvip) 的 VOCALOID 6 序列文件(.vpr)转换插件(opensvip-plugin-vpr)包含
+- 来自csharp目录下OpenSvip解决方案的Plugin.Vpr项目(相对仓库位置为[csharp/Plugins/Plugin.Vpr](https://github.com/TwoCreepers/opensvip-plugin-vpr/tree/main/csharp/Plugins/Plugin.Vpr)下的所有文件)
+- 来自csharp目录下OpenSvip解决方案的OpenSvip.Tests项目的PluginVprTest目录(相对仓库位置为[csharp/Tests/PluginVprTest](https://github.com/TwoCreepers/opensvip-plugin-vpr/tree/main/csharp/Tests/PluginVprTest))下的所有文件)
+
+其中除特别指出部分外
+- 代码部分采用 [MIT 许可证](https://mit-license.org/)
+- 非代码部分采用 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 许可证
+
+### 开源声明
+本插件在构建过程中，使用了以下第三方开源项目：
+|        开源项目         |            版权声明           |                             许可证（链接）                                       |                           相关链接                           |
+| :---------------------: | :---------------------------: | :-----------------------------------------------------------------------------:  | :----------------------------------------------------------: |
+|     Newtonsoft.Json     | Copyright © James Newton-King | [MIT License](https://github.com/JamesNK/Newtonsoft.Json/blob/master/LICENSE.md) |               https://www.newtonsoft.com/json                |
+|         NAudio          |   Copyright 2020 Mark Heath   | [MIT License](https://github.com/naudio/NAudio/blob/master/license.txt)          |               https://github.com/naudio/NAudio               |
