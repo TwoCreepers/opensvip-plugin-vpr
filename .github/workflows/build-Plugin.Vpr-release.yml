@@ -81,7 +81,7 @@ jobs:
         run: |
           $version = $env:GITHUB_REF.split("/")[-1].TrimStart("v")
           # 更新插件版本号
-          $propertiesPath = "main/csharp/Plugins/Plugin.Vpr/Properties.xml"
+          $propertiesPath = "main/csharp/Plugins/Plugin.Vpr/bin/Release/Properties.xml"
           if (Test-Path $propertiesPath){
               try {
                   (Get-Content -Path $propertiesPath -Raw) -replace '(?<=<Version>).*?(?=</Version>)', $version | Set-Content -Path $propertiesPath -Force
