@@ -80,6 +80,27 @@ jobs:
       - name: Build Zip Package
         run: |
           $version = $env:GITHUB_REF.split("/")[-1].TrimStart("v")
+          # 更新插件版本号
+          $propertiesPath = "main/csharp/Plugins/Plugin.Vpr/Properties.xml"
+          if (Test-Path $propertiesPath){
+              try {
+                  $xml = [xml](Get-Content $propertiesPath)
+                  $versionNode = $xml.SelectSingleNode("/Plugin/Version")
+                  if ($versionNode -eq $null) {
+                      Write-Error "Version node not found in XML"
+                      exit 1
+                  }
+                  $versionNode.InnerText = $version
+                  $xml.Save($propertiesPath)
+              }
+              catch {
+                  Write-Error "Error: $_"
+                  exit 1
+              }
+          } else {
+              Write-Error "Properties.xml not found: $propertiesPath"
+              exit 1
+          }
           $zipName = "./opensvip_plugin_vpr_$version.zip"
           Copy-Item -Path "main/THIRD-PARTY-LICENSES.md" -Destination "main/csharp/Plugins/Plugin.Vpr/bin/Release/" -Force
           Rename-Item -Path "main/csharp/Plugins/Plugin.Vpr/bin/Release/" -NewName "Vpr" -Force
