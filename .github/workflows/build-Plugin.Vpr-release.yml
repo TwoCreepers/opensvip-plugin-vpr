@@ -84,14 +84,7 @@ jobs:
           $propertiesPath = "main/csharp/Plugins/Plugin.Vpr/Properties.xml"
           if (Test-Path $propertiesPath){
               try {
-                  $xml = [xml](Get-Content $propertiesPath)
-                  $versionNode = $xml.SelectSingleNode("/Plugin/Version")
-                  if ($versionNode -eq $null) {
-                      Write-Error "Version node not found in XML"
-                      exit 1
-                  }
-                  $versionNode.InnerText = $version
-                  $xml.Save($propertiesPath)
+                  (Get-Content -Path $propertiesPath -Raw) -replace '(?<=<Version>).*?(?=</Version>)', $version | Set-Content -Path $propertiesPath -Force
               }
               catch {
                   Write-Error "Error: $_"
